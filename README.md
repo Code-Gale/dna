@@ -81,3 +81,7 @@ This will start:
 Notes:
 - The Dockerfile uses the Next.js standalone output for a slimmer runtime image.
 - Ensure SMTP and Paystack keys are configured in `.env` before real transactions.
+
+## Production deployment
+
+For an end‑to‑end live server setup (HTTPS, Nginx reverse proxy, Paystack callback, Docker and PM2 options), see `DEPLOYMENT.md`.
