@@ -1,0 +1,24 @@
+# dependencies
+node_modules
+.pnp
+.pnp.cjs
+
+# testing
+coverage
+
+# next.js
+.next
+out
+
+# misc
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-store
+
+# local env files
+.env
+.env.*
+!.env.example

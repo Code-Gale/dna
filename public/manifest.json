@@ -1,0 +1,12 @@
+{
+  "name": "Dinner N' Awards Night",
+  "short_name": "Awards Night",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#6B3FA0",
+  "icons": [
+    { "src": "/placeholder-logo.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/placeholder-logo.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
