@@ -1,7 +1,7 @@
 self.addEventListener('install', (event) => {
   self.skipWaiting()
   event.waitUntil(
-    caches.open('dna-cache-v2').then((cache) => cache.addAll([
+    caches.open('dna-cache-v3').then((cache) => cache.addAll([
       '/',
       '/tickets',
       // Do NOT pre-cache private/admin routes
@@ -15,7 +15,7 @@ self.addEventListener('activate', (event) => {
     (async () => {
       // Clean up old caches
       const keys = await caches.keys()
-      await Promise.all(keys.filter((k) => k !== 'dna-cache-v2').map((k) => caches.delete(k)))
+      await Promise.all(keys.filter((k) => k !== 'dna-cache-v3').map((k) => caches.delete(k)))
       await self.clients.claim()
     })()
   )
@@ -46,14 +46,17 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // Cache-first for static assets
-  event.respondWith(
-    caches.match(request).then((cached) => cached || fetch(request).then((response) => {
+  // Stale-while-revalidate for static assets
+  event.respondWith((async () => {
+    const cache = await caches.open('dna-cache-v3')
+    const cached = await cache.match(request)
+    const networkFetch = fetch(request).then((response) => {
       const copy = response.clone()
-      caches.open('dna-cache-v2').then((cache) => cache.put(request, copy)).catch(()=>{})
+      cache.put(request, copy).catch(()=>{})
       return response
-    }))
-  )
+    }).catch(() => cached)
+    return cached || networkFetch
+  })())
 })
 
 // Push notifications

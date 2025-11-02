@@ -20,11 +20,11 @@ export default function Footer() {
                   Gallery
                 </a>
               </li>
-              <li>
+              {/* <li>
                 <a href="#speakers" className="hover:text-white transition-colors">
                   Speakers
                 </a>
-              </li>
+              </li> */}
               <li>
                 <a href="#faq" className="hover:text-white transition-colors">
                   FAQ

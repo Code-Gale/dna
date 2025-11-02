@@ -23,7 +23,9 @@ export default function PushClient() {
     }
   }
 
-  if (!supported) return null
+  // Hide the prompt by default; only show if explicitly enabled via env flag
+  const showPrompt = supported && (process.env.NEXT_PUBLIC_SHOW_PUSH_PROMPT === 'true')
+  if (!showPrompt) return null
   return (
     <div className="fixed bottom-4 right-4 flex gap-2">
       <button onClick={subscribe} className="px-4 py-2 rounded bg-primary text-white">Enable Notifications</button>

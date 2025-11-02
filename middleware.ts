@@ -9,6 +9,7 @@ const ADMIN_API_PATHS = [
   '/api/settings/update',
   '/api/push/broadcast',
   '/api/reminders/send',
+  '/api/awards/categories',
 ]
 
 export async function middleware(request: NextRequest) {
@@ -30,5 +31,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/api/tickets/:path*', '/api/settings/:path*']
+  matcher: ['/admin/:path*', '/api/tickets/:path*', '/api/settings/:path*', '/api/awards/:path*']
 }

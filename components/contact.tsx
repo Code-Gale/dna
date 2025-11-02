@@ -1,8 +1,23 @@
 import { Mail, Phone, MapPin } from "lucide-react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 
 export default function Contact() {
+  const [email, setEmail] = useState("lp38arfamily@gmail.com")
+  const [phone, setPhone] = useState("+2348149603848")
+
+  useEffect(() => {
+    const run = async () => {
+      try {
+        const res = await fetch('/api/settings/get', { cache: 'no-store' })
+        const data = await res.json()
+        if (data.contactEmail) setEmail(String(data.contactEmail))
+        if (data.contactPhone) setPhone(String(data.contactPhone))
+      } catch {}
+    }
+    run()
+  }, [])
   return (
     <section id="contact" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-7xl mx-auto">
@@ -16,14 +31,14 @@ export default function Contact() {
             {
               icon: Mail,
               label: "Email",
-              value: "info@dinnerawards.com",
-              href: "mailto:info@dinnerawards.com",
+              value: email,
+              href: `mailto:${email}`,
             },
             {
               icon: Phone,
               label: "Phone",
-              value: "+1 (555) 123-4567",
-              href: "tel:+15551234567",
+              value: phone,
+              href: `tel:${phone}`,
             },
             {
               icon: MapPin,

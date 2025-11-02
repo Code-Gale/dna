@@ -12,19 +12,31 @@ export async function POST(request: NextRequest) {
     const { email, firstName, lastName, phone, quantity = 1 } = body
 
     await dbConnect()
-  const { price, ticketType, setting } = await getActivePricing()
+    // Basic input validation
+    if (!email || typeof email !== "string") {
+      return NextResponse.json({ error: "Email is required" }, { status: 400 })
+    }
+
+    // Env validation for clearer failures
+    if (!process.env.PAYSTACK_SECRET_KEY) {
+      console.error("PAYSTACK_SECRET_KEY is not set")
+      return NextResponse.json({ error: "Payment gateway is not configured" }, { status: 500 })
+    }
+
+    const { price, ticketType, setting } = await getActivePricing()
     const sold = await TicketModel.countDocuments({ paymentStatus: "success" })
     const remaining = Math.max((setting?.totalTickets ?? 100) - sold, 0)
     if (quantity > remaining) {
       return NextResponse.json({ error: `Only ${remaining} tickets left` }, { status: 400 })
     }
 
-    // Determine charge amount (in Naira). If passing fees to customer, gross-up.
     const passFees = parseBooleanEnv(process.env.PASS_FEES_TO_CUSTOMER)
     const netTotal = price * quantity
     const chargeAmountNaira = passFees ? grossUpNGNLocal(netTotal) : netTotal
 
-    // Initialize Paystack payment
+    // Initialize Paystack payment (with timeout)
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 20000) // 20s timeout
     const response = await fetch("https://api.paystack.co/transaction/initialize", {
       method: "POST",
       headers: {
@@ -46,17 +58,25 @@ export async function POST(request: NextRequest) {
           netTotal,
         },
       }),
+      signal: controller.signal,
     })
+    clearTimeout(timeout)
 
     const data = await response.json()
 
     if (!response.ok) {
-      return NextResponse.json({ error: data.message }, { status: response.status })
+      // Surface Paystack error message and status
+      const message = data?.message || data?.error || "Failed to initialize with Paystack"
+      return NextResponse.json({ error: message }, { status: response.status })
     }
 
     return NextResponse.json(data)
   } catch (error) {
     console.error("Paystack initialization error:", error)
-    return NextResponse.json({ error: "Failed to initialize payment" }, { status: 500 })
+    const isAbort = (error as any)?.name === "AbortError"
+    return NextResponse.json(
+      { error: isAbort ? "Payment initialization timed out. Please try again." : "Failed to initialize payment" },
+      { status: 500 },
+    )
   }
 }

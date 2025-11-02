@@ -23,6 +23,16 @@ interface TicketFormProps {
 
 export default function TicketForm({ step, formData, onFormChange, onNextStep, onPreviousStep }: TicketFormProps) {
   const [paying, setPaying] = useState(false)
+  const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeoutMs = 20000) => {
+    const controller = new AbortController()
+    const id = setTimeout(() => controller.abort(), timeoutMs)
+    try {
+      const res = await fetch(url, { ...options, signal: controller.signal })
+      return res
+    } finally {
+      clearTimeout(id)
+    }
+  }
   const ticketOptions = [
     {
       id: "standard",
@@ -221,7 +231,7 @@ export default function TicketForm({ step, formData, onFormChange, onNextStep, o
               onClick={async () => {
                 try {
                   setPaying(true)
-                  const res = await fetch("/api/paystack/initialize", {
+                  const res = await fetchWithTimeout("/api/paystack/initialize", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -232,8 +242,12 @@ export default function TicketForm({ step, formData, onFormChange, onNextStep, o
                       quantity: formData.quantity,
                     }),
                   })
-                  const data = await res.json()
-                  if (!res.ok) throw new Error(data?.error || "Failed to initialize payment")
+                  const data = await res.json().catch(() => ({}))
+                  if (!res.ok) {
+                    const message = (data as any)?.error || (data as any)?.message || "Failed to initialize payment"
+                    console.error("Initialize payment failed:", { status: res.status, data })
+                    throw new Error(message)
+                  }
                   const url = data?.data?.authorization_url
                   if (url) {
                     window.location.href = url
@@ -241,6 +255,7 @@ export default function TicketForm({ step, formData, onFormChange, onNextStep, o
                     throw new Error("Authorization URL not received")
                   }
                 } catch (e) {
+                  console.error("Payment init error:", e)
                   alert((e as Error).message)
                 } finally {
                   setPaying(false)

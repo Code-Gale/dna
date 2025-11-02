@@ -9,6 +9,7 @@ import Analytics from "@/components/analytics"
 import SettingsEditor from "@/components/settings-editor"
 import AdminStorage from "@/components/admin-storage"
 import AdminNotifications from "@/components/admin-notifications"
+import AdminAwards from "@/components/admin-awards"
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview")
@@ -30,6 +31,7 @@ export default function AdminDashboard() {
           {activeTab === "scanner" && <TicketScanner />}
           {activeTab === "tickets" && <TicketsList />}
           {activeTab === "analytics" && <Analytics />}
+          {activeTab === "awards" && <AdminAwards />}
           {activeTab === "storage" && <AdminStorage />}
           {activeTab === "comms" && <AdminNotifications />}
           {activeTab === "settings" && <SettingsEditor />}

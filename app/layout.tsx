@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { PWARegister } from "@/components/pwa-register"
 import PushClient from "@/components/push-client"
+import AnimatedBackground from "@/components/animated-background"
 
 const playfairDisplay = Playfair_Display({ subsets: ["latin"], weight: ["400", "700"] })
 const poppins = Poppins({ subsets: ["latin"], weight: ["400", "500", "600", "700"] })
@@ -54,6 +55,7 @@ export default function RootLayout({
       <body className={`${poppins.className} antialiased`}>
         <PWARegister />
         <PushClient />
+        <AnimatedBackground />
         {children}
         <Analytics />
       </body>

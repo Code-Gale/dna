@@ -1,4 +1,5 @@
 "use client"
+import Link from "next/link"
 import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -10,14 +11,14 @@ interface NavigationProps {
 export default function Navigation({ mobileMenuOpen, setMobileMenuOpen }: NavigationProps) {
   const navItems = [
     { label: "Event Details", href: "#details" },
-    { label: "Gallery", href: "#gallery" },
-    { label: "Speakers", href: "#speakers" },
+  { label: "Gallery", href: "#gallery" },
+  // { label: "Speakers", href: "#speakers" },
     { label: "FAQ", href: "#faq" },
     { label: "Contact", href: "#contact" },
   ]
 
   return (
-    <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-md z-50 border-b border-accent/20">
+    <nav className="fixed top-0 w-full bg-white/90 backdrop-blur-md z-50 border-b border-accent/20 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -43,12 +44,18 @@ export default function Navigation({ mobileMenuOpen, setMobileMenuOpen }: Naviga
 
           {/* CTA Button */}
           <div className="hidden md:block">
-            <Button className="bg-primary hover:bg-primary/90 text-white">Get Tickets</Button>
+            <Link href="/tickets" className="inline-flex">
+              <Button className="bg-primary hover:bg-primary/90 text-white">Get Tickets</Button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
-          <button className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          <button
+            aria-label="Toggle menu"
+            className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg border border-accent/30 bg-white/60 text-foreground shadow-sm"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
 
@@ -65,7 +72,9 @@ export default function Navigation({ mobileMenuOpen, setMobileMenuOpen }: Naviga
                 {item.label}
               </a>
             ))}
-            <Button className="w-full bg-primary hover:bg-primary/90 text-white mt-4">Get Tickets</Button>
+            <Link href="/tickets" className="block">
+              <Button className="w-full bg-primary hover:bg-primary/90 text-white mt-4">Get Tickets</Button>
+            </Link>
           </div>
         )}
       </div>

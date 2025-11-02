@@ -149,7 +149,7 @@ function generateEmailHTML(ticketData: {
           </div>
           
           <div class="footer">
-            <p>If you have any questions, contact us at info@dinnerawards.com</p>
+            <p>If you have any questions, contact us at lp38arfamily@gmail.com or call +2348149603848</p>
             <p>&copy; 2025 Dinner N' Awards Night. All rights reserved.</p>
           </div>
         </div>

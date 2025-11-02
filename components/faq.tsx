@@ -1,44 +1,35 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ChevronDown } from "lucide-react"
 import { Card } from "@/components/ui/card"
 
 export default function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
+  const [faqs, setFaqs] = useState<Array<{ question: string; answer: string }>>([])
 
-  const faqs = [
-    {
-      question: "What is the dress code?",
-      answer:
-        "The dress code is black tie or formal attire. We encourage guests to dress elegantly for this prestigious event.",
-    },
-    {
-      question: "Can I bring a guest?",
-      answer:
-        "Yes, you can bring one guest. Please indicate this when purchasing your ticket. Additional guests may be available depending on availability.",
-    },
-    {
-      question: "What time should I arrive?",
-      answer:
-        "Doors open at 5:30 PM. We recommend arriving by 6:00 PM to enjoy cocktails and networking before the ceremony begins at 6:30 PM.",
-    },
-    {
-      question: "Is there parking available?",
-      answer:
-        "Yes, complimentary valet parking is available for all guests. The venue also has a large parking lot with accessible spaces.",
-    },
-    {
-      question: "What is included in the ticket?",
-      answer:
-        "Your ticket includes a three-course gourmet dinner, beverages, entertainment, and access to the awards ceremony.",
-    },
-    {
-      question: "Can I get a refund?",
-      answer:
-        "Refunds are available up to 7 days before the event. After that date, tickets are non-refundable but may be transferred to another person.",
-    },
-  ]
+  useEffect(() => {
+    const run = async () => {
+      try {
+        const res = await fetch('/api/settings/get', { cache: 'no-store' })
+        const data = await res.json()
+        if (Array.isArray(data.faqs) && data.faqs.length > 0) {
+          setFaqs(data.faqs)
+        } else {
+          setFaqs([
+            { question: 'What is the dress code?', answer: 'Formal attire. Think elegant, think Royalty.' },
+            { question: 'What time should I arrive?', answer: 'Doors open at 5:30 PM. Check-in starts at 5:30 PM.' },
+          ])
+        }
+      } catch {
+        setFaqs([
+          { question: 'What is the dress code?', answer: 'Formal attire. Think elegant, think Royalty.' },
+          { question: 'What time should I arrive?', answer: 'Doors open at 5:30 PM. Check-in starts at 5:30 PM.' },
+        ])
+      }
+    }
+    run()
+  }, [])
 
   return (
     <section id="faq" className="py-20 px-4 sm:px-6 lg:px-8 bg-accent/5">

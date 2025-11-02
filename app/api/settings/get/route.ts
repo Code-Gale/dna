@@ -13,5 +13,9 @@ export async function GET() {
     regularPrice: setting.regularPrice,
     earlyBirdDeadline: setting.earlyBirdDeadline,
     eventDate: setting.eventDate,
+    contactEmail: setting.contactEmail,
+    contactPhone: setting.contactPhone,
+    outfitInspiration: setting.outfitInspiration || [],
+    faqs: setting.faqs || [],
   })
 }
