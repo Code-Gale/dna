@@ -1,12 +1,14 @@
 import { Card } from "@/components/ui/card"
 import { Users, Ticket, TrendingUp, CheckCircle } from "lucide-react"
 import { useEffect, useState } from "react"
+import { formatDistanceToNow } from "date-fns"
 
 export default function DashboardOverview() {
   const [sold, setSold] = useState(0)
   const [total, setTotal] = useState(100)
   const [checkedIn, setCheckedIn] = useState(0)
   const [revenue, setRevenue] = useState(0)
+  const [recentTickets, setRecentTickets] = useState<any[]>([])
 
   useEffect(() => {
     const run = async () => {
@@ -22,6 +24,11 @@ export default function DashboardOverview() {
         const tickets = Array.isArray(list.tickets) ? list.tickets : []
         setCheckedIn(tickets.filter((t: any) => t.checkedIn).length)
         setRevenue(tickets.reduce((sum: number, t: any) => sum + (t.paymentStatus === "success" ? (t.amountPaid || 0) : 0), 0))
+        // Keep most recent successful payments for display
+        const recent = tickets
+          .filter((t: any) => t.paymentStatus === "success")
+          .slice(0, 8)
+        setRecentTickets(recent)
       } catch {}
     }
     run()
@@ -59,20 +66,23 @@ export default function DashboardOverview() {
       <Card className="p-6 border-accent/20">
         <h3 className="font-semibold text-foreground mb-4">Recent Ticket Sales</h3>
         <div className="space-y-4">
-          {[
-            { name: "Sarah Johnson", type: "VIP", time: "2 minutes ago" },
-            { name: "Michael Chen", type: "Standard", time: "15 minutes ago" },
-            { name: "Emma Rodriguez", type: "VIP", time: "1 hour ago" },
-            { name: "James Thompson", type: "Student", time: "2 hours ago" },
-          ].map((item, index) => (
-            <div key={index} className="flex items-center justify-between py-3 border-b border-accent/10 last:border-0">
-              <div>
-                <p className="font-medium text-foreground">{item.name}</p>
-                <p className="text-xs text-foreground/60">{item.type} Ticket</p>
+          {recentTickets.length === 0 && (
+            <p className="text-sm text-foreground/60">No recent sales yet.</p>
+          )}
+          {recentTickets.map((t: any, index: number) => {
+            const fullName = `${t.firstName ?? ""} ${t.lastName ?? ""}`.trim() || t.email
+            const typeLabel = (t.ticketType === "early-bird" ? "Early Bird" : t.ticketType === "regular" ? "Regular" : String(t.ticketType || "Ticket")).toString()
+            const timeAgo = t.createdAt ? formatDistanceToNow(new Date(t.createdAt), { addSuffix: true }) : ""
+            return (
+              <div key={t.ticketId ?? index} className="flex items-center justify-between py-3 border-b border-accent/10 last:border-0">
+                <div>
+                  <p className="font-medium text-foreground">{fullName}</p>
+                  <p className="text-xs text-foreground/60">{typeLabel} Ticket</p>
+                </div>
+                <p className="text-xs text-foreground/50">{timeAgo}</p>
               </div>
-              <p className="text-xs text-foreground/50">{item.time}</p>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </Card>
     </div>

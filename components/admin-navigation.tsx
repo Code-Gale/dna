@@ -1,7 +1,8 @@
 "use client"
 
-import { BarChart3, QrCode, Ticket, TrendingUp, LogOut, Settings, HardDrive, Bell, Award } from "lucide-react"
+import { BarChart3, QrCode, Ticket, TrendingUp, LogOut, Settings, HardDrive, Bell, Award, Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useState } from "react"
 
 interface AdminNavigationProps {
   activeTab: string
@@ -9,6 +10,7 @@ interface AdminNavigationProps {
 }
 
 export default function AdminNavigation({ activeTab, setActiveTab }: AdminNavigationProps) {
+  const [mobileOpen, setMobileOpen] = useState(false)
   const tabs = [
     { id: "overview", label: "Overview", icon: BarChart3 },
     { id: "scanner", label: "Ticket Scanner", icon: QrCode },
@@ -32,7 +34,7 @@ export default function AdminNavigation({ activeTab, setActiveTab }: AdminNaviga
             <span className="font-serif font-bold text-primary hidden sm:inline">Admin Panel</span>
           </div>
 
-          {/* Tabs */}
+          {/* Tabs - desktop */}
           <div className="hidden md:flex items-center gap-1">
             {tabs.map((tab) => {
               const Icon = tab.icon
@@ -51,15 +53,52 @@ export default function AdminNavigation({ activeTab, setActiveTab }: AdminNaviga
             })}
           </div>
 
-          {/* Logout Button */}
-          <Button
-            onClick={async ()=>{ try{ await fetch('/api/auth/logout', { method:'POST' }); window.location.href='/admin/login' } catch{} }}
-            variant="outline" className="border-primary text-primary hover:bg-primary/5 bg-transparent gap-2">
-            <LogOut size={18} />
-            <span className="hidden sm:inline">Logout</span>
-          </Button>
+          {/* Right controls */}
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={async ()=>{ try{ await fetch('/api/auth/logout', { method:'POST' }); window.location.href='/admin/login' } catch{} }}
+              variant="outline" className="border-primary text-primary hover:bg-primary/5 bg-transparent gap-2 hidden sm:inline-flex">
+              <LogOut size={18} />
+              <span className="hidden sm:inline">Logout</span>
+            </Button>
+            {/* Mobile menu toggle */}
+            <button
+              aria-label="Toggle menu"
+              className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg border border-accent/30 bg-white/60 text-foreground shadow-sm"
+              onClick={() => setMobileOpen(!mobileOpen)}
+            >
+              {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <div className="md:hidden border-t border-accent/20 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 space-y-1">
+            {tabs.map((tab) => {
+              const Icon = tab.icon
+              const active = activeTab === tab.id
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => { setActiveTab(tab.id); setMobileOpen(false) }}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg ${active ? 'bg-primary/10 text-primary' : 'text-foreground/80 hover:bg-accent/10'}`}
+                >
+                  <Icon size={18} />
+                  <span className="text-sm font-medium">{tab.label}</span>
+                </button>
+              )
+            })}
+            <Button
+              onClick={async ()=>{ try{ await fetch('/api/auth/logout', { method:'POST' }); window.location.href='/admin/login' } catch{} }}
+              variant="outline" className="w-full border-primary text-primary hover:bg-primary/5 bg-transparent gap-2">
+              <LogOut size={18} /> Logout
+            </Button>
+          </div>
+        </div>
+      )}
     </nav>
   )
 }
