@@ -43,7 +43,7 @@ export default function Contact() {
             {
               icon: MapPin,
               label: "Address",
-              value: "Provincial Convention Center, City, Province",
+              value: "20, Alhaja Adetutu Street, via Baale Bus Stop, Egbed, Lagos.",
               href: "#",
             },
           ].map((contact, index) => {

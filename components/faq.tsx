@@ -18,13 +18,13 @@ export default function FAQ() {
         } else {
           setFaqs([
             { question: 'What is the dress code?', answer: 'Formal attire. Think elegant, think Royalty.' },
-            { question: 'What time should I arrive?', answer: 'Doors open at 5:30 PM. Check-in starts at 5:30 PM.' },
+            { question: 'What time should I arrive?', answer: 'Doors open by 2PM. Check-in starts at 2:30 PM.' },
           ])
         }
       } catch {
         setFaqs([
           { question: 'What is the dress code?', answer: 'Formal attire. Think elegant, think Royalty.' },
-          { question: 'What time should I arrive?', answer: 'Doors open at 5:30 PM. Check-in starts at 5:30 PM.' },
+          { question: 'What time should I arrive?', answer: 'Doors open by 2PM. Check-in starts at 2:30 PM.' },
         ])
       }
     }

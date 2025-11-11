@@ -88,7 +88,7 @@ export default function TicketConfirmation() {
               <li>✓ Arrive 30 minutes early for check-in</li>
               <li>✓ Bring valid ID and formal attire</li>
               <li>✓ Keep this ticket safe - it's your entry pass</li>
-              <li>✓ Check-in opens at 5:30 PM</li>
+              <li>✓ Check-in opens at 2:30 PM</li>
             </ul>
           </div>
 
@@ -125,7 +125,7 @@ export default function TicketConfirmation() {
             </li>
             <li className="flex gap-3">
               <span className="font-bold text-primary">3.</span>
-              <span>Arrive early on March 15 for smooth check-in</span>
+              <span>Arrive early on December 19 for smooth check-in</span>
             </li>
             <li className="flex gap-3">
               <span className="font-bold text-primary">4.</span>
