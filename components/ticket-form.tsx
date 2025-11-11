@@ -223,7 +223,7 @@ export default function TicketForm({ step, formData, onFormChange, onNextStep, o
 
           <div className="bg-accent/10 border border-accent/30 rounded-lg p-6 mb-8">
             <p className="text-sm text-foreground/70 mb-4">
-              Click the button below to proceed to secure payment via Paystack. You'll receive your e-ticket via email
+              Click the button below to proceed to secure payment via Korapay. You'll receive your e-ticket via email
               after successful payment.
             </p>
             <Button
@@ -231,7 +231,7 @@ export default function TicketForm({ step, formData, onFormChange, onNextStep, o
               onClick={async () => {
                 try {
                   setPaying(true)
-                  const res = await fetchWithTimeout("/api/paystack/initialize", {
+                  const res = await fetchWithTimeout("/api/korapay/initialize", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -248,11 +248,57 @@ export default function TicketForm({ step, formData, onFormChange, onNextStep, o
                     console.error("Initialize payment failed:", { status: res.status, data })
                     throw new Error(message)
                   }
-                  const url = data?.data?.authorization_url
-                  if (url) {
-                    window.location.href = url
-                  } else {
-                    throw new Error("Authorization URL not received")
+                  const payload = data?.data
+                  if (!payload) throw new Error("Invalid initialization response")
+
+                  const publicKey = payload.publicKey
+                  if (!publicKey) throw new Error("Payment public key not configured")
+
+                  // Dynamically load Korapay Checkout script if not already loaded
+                  async function loadKorapayScript() {
+                    if ((window as any).Korapay) return
+                    await new Promise<void>((resolve, reject) => {
+                      const s = document.createElement("script")
+                      s.src = "https://korablobstorage.blob.core.windows.net/modal-bucket/korapay-collections.min.js"
+                      s.async = true
+                      s.onload = () => resolve()
+                      s.onerror = (e) => reject(e)
+                      document.head.appendChild(s)
+                    })
+                  }
+
+                  try {
+                    await loadKorapayScript()
+                  } catch (err) {
+                    console.error("Failed to load Korapay script", err)
+                    throw new Error("Unable to load payment UI")
+                  }
+
+                  // Initialize Korapay Checkout Standard
+                  try {
+                    ;(window as any).Korapay.initialize({
+                      key: publicKey,
+                      reference: payload.reference,
+                      amount: payload.amount,
+                      currency: payload.currency || "NGN",
+                      customer: payload.customer || { name: `${formData.firstName} ${formData.lastName}`.trim(), email: formData.email },
+                      notification_url: payload.notification_url,
+                      onClose: function () {
+                        setPaying(false)
+                      },
+                      onSuccess: function (resp: any) {
+                        // Redirect to ticket confirmation where server verifies and issues tickets
+                        window.location.href = `/ticket-confirmation?reference=${payload.reference}`
+                      },
+                      onFailed: function (resp: any) {
+                        console.error("Korapay reported failure:", resp)
+                        alert("Payment failed. Please try again.")
+                        setPaying(false)
+                      },
+                    })
+                  } catch (err) {
+                    console.error("Korapay initialization error", err)
+                    throw new Error("Failed to open payment modal")
                   }
                 } catch (e) {
                   console.error("Payment init error:", e)
@@ -263,7 +309,7 @@ export default function TicketForm({ step, formData, onFormChange, onNextStep, o
               }}
               className="w-full bg-primary hover:bg-primary/90 text-white py-3 text-lg"
             >
-              {paying ? "Redirecting…" : "Pay with Paystack"}
+              {paying ? "Redirecting…" : "Pay with Korapay"}
             </Button>
           </div>
 

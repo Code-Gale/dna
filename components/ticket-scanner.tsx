@@ -160,7 +160,7 @@ export default function TicketScanner() {
         setErrorMessage(
           insecure
             ? "Camera requires HTTPS (or localhost). Please use a secure connection."
-            : e?.message || "Unable to access camera. Check permissions and try again.",
+            : (e as any)?.message || "Unable to access camera. Check permissions and try again.",
         )
         setScanning(false)
       }

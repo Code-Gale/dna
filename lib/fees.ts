@@ -1,4 +1,4 @@
-// Helpers to compute Paystack fees and optionally gross-up the amount
+// Helpers to compute gateway fees and optionally gross-up the amount
 // Defaults target Nigeria local card/transfer fees: 1.5% + ₦100, ₦100 waived below ₦2,500, fee capped at ₦2,000
 
 export type NGNLocalFeeParams = {

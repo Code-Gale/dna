@@ -1,6 +1,6 @@
 # Production Deployment Guide
 
-This guide walks you through deploying the Dinner N’ Awards Night site to a live server with HTTPS, Paystack, email, and optional object storage.
+This guide walks you through deploying the Dinner N’ Awards Night site to a live server with HTTPS, a payment gateway (Korapay), email, and optional object storage.
 
 You can deploy either with Docker (recommended) or bare‑metal Node.js + PM2.
 
@@ -12,7 +12,7 @@ You can deploy either with Docker (recommended) or bare‑metal Node.js + PM2.
   - Docker Engine + Docker Compose v2
   - Node.js 20+, Corepack (for pnpm), build tools
 - Production credentials:
-  - Paystack LIVE secret (and public key if used client‑side)
+  - Korapay LIVE secret (and public key if used client‑side)
   - SMTP provider credentials (e.g., Resend, Sendgrid, Mailgun, Postmark, Gmail App Password)
   - MongoDB connection (MongoDB Atlas recommended)
   - VAPID keys for Web Push
@@ -30,10 +30,10 @@ NEXT_PUBLIC_BASE_URL=https://your-domain.com
 MONGODB_URI=your_mongodb_connection_string
 MONGODB_DB=dinner
 
-# Paystack
-PAYSTACK_SECRET_KEY=sk_live_xxx
+# Korapay
+KORAPAY_SECRET_KEY=sk_live_xxx
 # Optional if referenced in client code
-PAYSTACK_PUBLIC_KEY=pk_live_xxx
+KORAPAY_PUBLIC_KEY=pk_live_xxx
 
 # SMTP (Nodemailer)
 SMTP_HOST=smtp.example.com
@@ -63,8 +63,8 @@ VAPID_CONTACT=mailto:admin@your-domain.com
 ```
 
 Important:
-- `NEXT_PUBLIC_BASE_URL` must be your public HTTPS origin. Paystack will redirect to `${BASE_URL}/ticket-confirmation`.
-- In Paystack Dashboard → Settings → Domains & URLs, set your callback/redirect to `https://your-domain.com/ticket-confirmation`.
+- `NEXT_PUBLIC_BASE_URL` must be your public HTTPS origin. Your payment provider will redirect to `${BASE_URL}/ticket-confirmation`.
+- In your payment provider dashboard (Korapay), set your callback/redirect to `https://your-domain.com/ticket-confirmation`.
 
 ---
 
@@ -192,10 +192,10 @@ Use the same Nginx config as in the Docker section, pointing to `127.0.0.1:3000`
 
 ---
 
-## Paystack configuration checklist
+## Korapay configuration checklist
 
-- Dashboard → Settings → Domains & URLs: set redirect/callback to `https://your-domain.com/ticket-confirmation`.
-- Live keys in `.env`: `PAYSTACK_SECRET_KEY` (and `PAYSTACK_PUBLIC_KEY` if used).
+- Dashboard: set redirect/callback to `https://your-domain.com/ticket-confirmation`.
+- Live keys in `.env`: `KORAPAY_SECRET_KEY` (and `KORAPAY_PUBLIC_KEY` if used).
 - If you test from a mobile device, ensure the checkout/redirect happens on the same domain.
 
 ## Email configuration
@@ -218,8 +218,8 @@ Use the same Nginx config as in the Docker section, pointing to `127.0.0.1:3000`
 
 - App logs: `docker compose logs -f app` or `pm2 logs`
 - Common issues:
-  - "This site can’t be reached" after Paystack payment → app not listening on 3000 or wrong `NEXT_PUBLIC_BASE_URL`. Ensure server is up and URL uses your domain with HTTPS.
-  - Verify failing → wrong Paystack key or reference missing; check server logs in `/api/paystack/verify`.
+  - "This site can’t be reached" after payment → app not listening on 3000 or wrong `NEXT_PUBLIC_BASE_URL`. Ensure server is up and URL uses your domain with HTTPS.
+  - Verify failing → wrong Korapay key or reference missing; check server logs in `/api/korapay/verify`.
   - Scanner not working → page not served over HTTPS or camera permission denied.
   - Email not delivered → SMTP credentials wrong or sender domain not authorized; set SPF/DKIM.
   - Static assets 404/502 behind Nginx → check proxy headers and that Next.js is running.
@@ -236,7 +236,7 @@ Use the same Nginx config as in the Docker section, pointing to `127.0.0.1:3000`
 ## Quick verification checklist
 
 - [ ] App reachable at your domain over HTTPS
-- [ ] Paystack test (live mode) completes and redirects to `/ticket-confirmation`
+- [ ] Korapay test (live mode) completes and redirects to `/ticket-confirmation`
 - [ ] Email ticket received (with QR/PDF/ICS)
 - [ ] Admin login works
 - [ ] Scanner works over HTTPS

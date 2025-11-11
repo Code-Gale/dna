@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer"
 
-let transporter: nodemailer.Transporter | null = null
+// Use `any` here to avoid depending on @types/nodemailer in this repo
+let transporter: any = null
 
 function getTransporter() {
   if (transporter) return transporter

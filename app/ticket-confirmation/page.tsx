@@ -16,7 +16,7 @@ export default function TicketConfirmation() {
     const run = async () => {
       if (!reference) return
       try {
-        const res = await fetch("/api/paystack/verify", {
+        const res = await fetch("/api/korapay/verify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ reference }),

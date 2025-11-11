@@ -1,10 +1,10 @@
 # Dinner N’ Awards Night — The Great Banquet
 
-A responsive, animated event website built with Next.js 16 + TailwindCSS, with Paystack payments, MongoDB ticketing, QR e-tickets, and a simple admin dashboard.
+A responsive, animated event website built with Next.js 16 + TailwindCSS, with Korapay payments, MongoDB ticketing, QR e-tickets, and a simple admin dashboard.
 
 ## What’s inside
 - Landing page with countdown and live tickets progress
-- Ticket purchase flow with Paystack
+- Ticket purchase flow with Korapay
 - Early-bird pricing (₦5,000) until Nov 21, 2025, then regular (₦7,500)
 - MongoDB-backed tickets (max 100, capacity enforced)
 - E-ticket generation with QR codes and email via Nodemailer (SMTP)
@@ -15,7 +15,7 @@ A responsive, animated event website built with Next.js 16 + TailwindCSS, with P
 ```
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
 MONGODB_URI=...
-PAYSTACK_SECRET_KEY=...
+KORAPAY_SECRET_KEY=...
 SMTP_HOST=...
 SMTP_PORT=587
 SMTP_USER=...
@@ -80,8 +80,8 @@ This will start:
 
 Notes:
 - The Dockerfile uses the Next.js standalone output for a slimmer runtime image.
-- Ensure SMTP and Paystack keys are configured in `.env` before real transactions.
+- Ensure SMTP and Korapay keys are configured in `.env` before real transactions.
 
 ## Production deployment
 
-For an end‑to‑end live server setup (HTTPS, Nginx reverse proxy, Paystack callback, Docker and PM2 options), see `DEPLOYMENT.md`.
+For an end‑to‑end live server setup (HTTPS, Nginx reverse proxy, payment gateway callback, Docker and PM2 options), see `DEPLOYMENT.md`.
