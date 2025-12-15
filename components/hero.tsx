@@ -106,22 +106,6 @@ export default function Hero() {
               Learn More
             </Button>
           </div>
-
-          {/* Ticket Counter */}
-          <div className="pt-8 border-t border-accent/20">
-            <p className="text-sm text-foreground/60 mb-2">Limited Availability</p>
-            <div className="flex items-center justify-center gap-4">
-              <div className="w-48 h-2 bg-accent/20 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-accent rounded-full"
-                  style={{ width: `${stats ? Math.min(100, Math.round((stats.sold / stats.total) * 100)) : 0}%` }}
-                ></div>
-              </div>
-              <span className="font-semibold text-primary">
-                {stats ? `${stats.sold}/${stats.total} Sold` : "Loading..."}
-              </span>
-            </div>
-          </div>
         </div>
       </div>
     </section>
