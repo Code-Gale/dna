@@ -14,26 +14,14 @@ export default function Hero() {
     seconds: 0,
   })
   const [stats, setStats] = useState<{ total: number; sold: number; remaining: number } | null>(null)
+  const [eventDate, setEventDate] = useState<string | null>(null)
 
+  // Separate effect for fetching event date
   useEffect(() => {
-    const calculateTimeLeft = (eventDateStr?: string) => {
-      const eventDate = eventDateStr ? new Date(eventDateStr).getTime() : new Date("2025-12-19T18:00:00+01:00").getTime()
-      const now = new Date().getTime()
-      const difference = eventDate - now
-
-      if (difference > 0) {
-        setTimeLeft({
-          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-          minutes: Math.floor((difference / 1000 / 60) % 60),
-          seconds: Math.floor((difference / 1000) % 60),
-        })
-      }
-    }
-
-    let timer: any
+    let refreshTimer: any
     let mounted = true
-    const init = async () => {
+    
+    const fetchEventDate = async () => {
       try {
         const res = await fetch(`/api/tickets/stats?t=${Date.now()}`, { 
           cache: "no-store",
@@ -45,44 +33,68 @@ export default function Hero() {
         const data = await res.json()
         setStats({ total: data.total, sold: data.sold, remaining: data.remaining })
         if (data.eventDate) {
-          calculateTimeLeft(data.eventDate)
+          setEventDate(data.eventDate)
         }
       } catch {}
-      if (mounted) {
-        timer = setInterval(() => {
-          if (mounted) {
-            // Re-fetch event date periodically to catch admin changes
-            fetch(`/api/tickets/stats?t=${Date.now()}`, { 
-              cache: "no-store",
-              headers: { 'Cache-Control': 'no-cache' }
-            })
-              .then(res => res.json())
-              .then(data => {
-                if (mounted && data.eventDate) {
-                  calculateTimeLeft(data.eventDate)
-                }
-              })
-              .catch(() => {})
-          }
-        }, 30000) // Check every 30 seconds
-      }
     }
-    init()
+    
+    // Initial fetch
+    fetchEventDate()
+    
+    // Refresh event date every 30 seconds to catch admin changes
+    refreshTimer = setInterval(() => {
+      if (mounted) {
+        fetchEventDate()
+      }
+    }, 30000)
     
     // Refresh when page becomes visible
     const handleVisibilityChange = () => {
       if (!document.hidden && mounted) {
-        init()
+        fetchEventDate()
       }
     }
     document.addEventListener('visibilitychange', handleVisibilityChange)
     
     return () => {
       mounted = false
-      clearInterval(timer)
+      clearInterval(refreshTimer)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
   }, [])
+
+  // Separate effect for countdown timer that updates every second
+  useEffect(() => {
+    if (!eventDate) return
+
+    const calculateTimeLeft = () => {
+      const eventDateTimestamp = new Date(eventDate).getTime()
+      const now = new Date().getTime()
+      const difference = eventDateTimestamp - now
+
+      if (difference > 0) {
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60),
+        })
+      } else {
+        // Event has passed
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 })
+      }
+    }
+
+    // Calculate immediately
+    calculateTimeLeft()
+    
+    // Update countdown every second
+    const countdownTimer = setInterval(calculateTimeLeft, 1000)
+    
+    return () => {
+      clearInterval(countdownTimer)
+    }
+  }, [eventDate])
 
   return (
     <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white via-white to-accent/5">

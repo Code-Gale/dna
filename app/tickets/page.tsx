@@ -121,6 +121,8 @@ export default function TicketsPage() {
             <TicketForm
               step={step}
               formData={formData}
+              ticketPrices={ticketPrices}
+              isEarlyBird={isEarlyBird}
               onFormChange={handleFormChange}
               onNextStep={handleNextStep}
               onPreviousStep={handlePreviousStep}
