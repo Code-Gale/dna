@@ -14,12 +14,14 @@ export default function Hero() {
     seconds: 0,
   })
   const [stats, setStats] = useState<{ total: number; sold: number; remaining: number } | null>(null)
+  const [eventDate, setEventDate] = useState<string | null>(null)
 
   useEffect(() => {
     const calculateTimeLeft = (eventDateStr?: string) => {
-      const eventDate = eventDateStr ? new Date(eventDateStr).getTime() : new Date("2025-12-19T18:00:00+01:00").getTime()
+      const dateToUse = eventDateStr || eventDate
+      const eventDateTimestamp = dateToUse ? new Date(dateToUse).getTime() : new Date("2025-12-19T18:00:00+01:00").getTime()
       const now = new Date().getTime()
-      const difference = eventDate - now
+      const difference = eventDateTimestamp - now
 
       if (difference > 0) {
         setTimeLeft({
@@ -37,13 +39,16 @@ export default function Hero() {
         const res = await fetch("/api/tickets/stats", { cache: "no-store" })
         const data = await res.json()
         setStats({ total: data.total, sold: data.sold, remaining: data.remaining })
-        calculateTimeLeft(data.eventDate)
+        if (data.eventDate) {
+          setEventDate(data.eventDate)
+          calculateTimeLeft(data.eventDate)
+        }
       } catch {}
       timer = setInterval(() => calculateTimeLeft(), 1000)
     }
     init()
     return () => clearInterval(timer)
-  }, [])
+  }, [eventDate])
 
   return (
     <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white via-white to-accent/5">

@@ -16,12 +16,14 @@ interface TicketFormProps {
     guestName: string
     dietaryRestrictions: string
   }
+  ticketPrices: Record<string, number>
+  isEarlyBird: boolean
   onFormChange: (field: string, value: string | number) => void
   onNextStep: () => void
   onPreviousStep: () => void
 }
 
-export default function TicketForm({ step, formData, onFormChange, onNextStep, onPreviousStep }: TicketFormProps) {
+export default function TicketForm({ step, formData, ticketPrices, isEarlyBird, onFormChange, onNextStep, onPreviousStep }: TicketFormProps) {
   const [paying, setPaying] = useState(false)
   const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeoutMs = 20000) => {
     const controller = new AbortController()
@@ -33,11 +35,12 @@ export default function TicketForm({ step, formData, onFormChange, onNextStep, o
       clearTimeout(id)
     }
   }
+  const currentPrice = ticketPrices[formData.ticketType] || ticketPrices.standard || 5000
   const ticketOptions = [
     {
       id: "standard",
       name: "General Admission",
-      price: "₦5,000 (Early) / ₦7,500 (Regular)",
+      price: `₦${currentPrice.toLocaleString()}${isEarlyBird ? " (Early Bird)" : ""}`,
       description: "Admission with dinner and entertainment",
       features: ["3-course dinner", "Entertainment", "Awards ceremony access"],
     },

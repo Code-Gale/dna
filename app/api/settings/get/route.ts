@@ -17,5 +17,11 @@ export async function GET() {
     contactPhone: setting.contactPhone,
     outfitInspiration: setting.outfitInspiration || [],
     faqs: setting.faqs || [],
+  }, {
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    }
   })
 }

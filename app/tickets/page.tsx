@@ -28,8 +28,9 @@ export default function TicketsPage() {
         const data = await res.json()
         const early = new Date() <= new Date(data.earlyBirdDeadline)
         setIsEarlyBird(!!early)
-        // We treat 'standard' as general admission
-        setTicketPrices({ standard: early ? 5000 : 7500, vip: early ? 5000 : 7500, student: early ? 5000 : 7500 })
+        // Use prices from settings
+        const price = early ? (data.earlyBirdPrice ?? 5000) : (data.regularPrice ?? 7500)
+        setTicketPrices({ standard: price, vip: price, student: price })
       } catch {}
     }
     run()
@@ -90,6 +91,8 @@ export default function TicketsPage() {
             <TicketForm
               step={step}
               formData={formData}
+              ticketPrices={ticketPrices}
+              isEarlyBird={isEarlyBird}
               onFormChange={handleFormChange}
               onNextStep={handleNextStep}
               onPreviousStep={handlePreviousStep}

@@ -15,7 +15,21 @@ export async function GET() {
     const sold = await TicketModel.countDocuments({ paymentStatus: "success" })
     const total = setting?.totalTickets ?? 100
     const remaining = Math.max(total - sold, 0)
-    return NextResponse.json({ total, sold, remaining, earlyBirdDeadline: setting?.earlyBirdDeadline, eventDate: setting?.eventDate })
+    return NextResponse.json({ 
+      total, 
+      sold, 
+      remaining, 
+      earlyBirdDeadline: setting?.earlyBirdDeadline, 
+      eventDate: setting?.eventDate,
+      earlyBirdPrice: setting?.earlyBirdPrice ?? 5000,
+      regularPrice: setting?.regularPrice ?? 7500
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    })
   } catch (e) {
     console.error("Stats error", e)
     return NextResponse.json({ error: "Failed to get stats" }, { status: 500 })
