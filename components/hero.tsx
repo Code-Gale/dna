@@ -34,9 +34,21 @@ export default function Hero() {
     }
 
     let timer: any
+    let mounted = true
     const init = async () => {
       try {
-        const res = await fetch("/api/tickets/stats", { cache: "no-store" })
+        // Add cache-busting timestamp to ensure fresh data
+        const timestamp = Date.now()
+        const res = await fetch(`/api/tickets/stats?t=${timestamp}&_=${Math.random()}`, { 
+          cache: "no-store",
+          method: 'GET',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+          }
+        })
+        if (!mounted) return
         const data = await res.json()
         setStats({ total: data.total, sold: data.sold, remaining: data.remaining })
         if (data.eventDate) {
@@ -44,10 +56,28 @@ export default function Hero() {
           calculateTimeLeft(data.eventDate)
         }
       } catch {}
-      timer = setInterval(() => calculateTimeLeft(), 1000)
+      if (mounted) {
+        timer = setInterval(() => calculateTimeLeft(), 1000)
+      }
     }
     init()
-    return () => clearInterval(timer)
+    // Refresh stats every 15 seconds to catch admin changes
+    const statsInterval = setInterval(init, 15000)
+    
+    // Refresh when page becomes visible
+    const handleVisibilityChange = () => {
+      if (!document.hidden && mounted) {
+        init()
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    
+    return () => {
+      mounted = false
+      clearInterval(timer)
+      clearInterval(statsInterval)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [eventDate])
 
   return (

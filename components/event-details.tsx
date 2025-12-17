@@ -10,7 +10,15 @@ export default function EventDetails() {
   useEffect(() => {
     const fetchEventDate = async () => {
       try {
-        const res = await fetch("/api/tickets/stats", { cache: "no-store" })
+        // Add cache-busting timestamp to ensure fresh data
+        const timestamp = Date.now()
+        const res = await fetch(`/api/tickets/stats?t=${timestamp}`, { 
+          cache: "no-store",
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+          }
+        })
         const data = await res.json()
         if (data.eventDate) {
           setEventDate(data.eventDate)
@@ -18,6 +26,9 @@ export default function EventDetails() {
       } catch {}
     }
     fetchEventDate()
+    // Refresh every 10 seconds to catch admin changes
+    const interval = setInterval(fetchEventDate, 10000)
+    return () => clearInterval(interval)
   }, [])
 
   const formatEventDate = (dateStr: string | null) => {

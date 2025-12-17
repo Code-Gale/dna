@@ -29,8 +29,30 @@ self.addEventListener('fetch', (event) => {
   const isHTMLNavigation = request.mode === 'navigate' || (request.headers.get('accept') || '').includes('text/html')
 
   // Bypass cache for private routes and API, always go to network
-  if (isPrivate) {
-    event.respondWith(fetch(request))
+  // Also bypass if request has cache-busting query parameter
+  // NEVER cache API routes - always fetch fresh
+  if (isPrivate || url.searchParams.has('t') || url.searchParams.has('_')) {
+    event.respondWith(fetch(request, {
+      cache: 'no-store',
+      method: request.method,
+      headers: {
+        ...Object.fromEntries(request.headers.entries()),
+        'Cache-Control': 'no-cache, no-store, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      }
+    }).then(response => {
+      // Ensure response itself is not cached
+      const headers = new Headers(response.headers)
+      headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, proxy-revalidate')
+      headers.set('Pragma', 'no-cache')
+      headers.set('Expires', '0')
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: headers
+      })
+    }))
     return
   }
 

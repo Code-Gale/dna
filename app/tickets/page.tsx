@@ -22,9 +22,21 @@ export default function TicketsPage() {
   const [isEarlyBird, setIsEarlyBird] = useState<boolean>(true)
 
   useEffect(() => {
+    let mounted = true
     const run = async () => {
       try {
-        const res = await fetch("/api/tickets/stats", { cache: "no-store" })
+        // Add cache-busting timestamp to ensure fresh data
+        const timestamp = Date.now()
+        const res = await fetch(`/api/tickets/stats?t=${timestamp}&_=${Math.random()}`, { 
+          cache: "no-store",
+          method: 'GET',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+          }
+        })
+        if (!mounted) return
         const data = await res.json()
         const early = new Date() <= new Date(data.earlyBirdDeadline)
         setIsEarlyBird(!!early)
@@ -34,6 +46,22 @@ export default function TicketsPage() {
       } catch {}
     }
     run()
+    // Poll for updates every 10 seconds to catch admin changes
+    const interval = setInterval(run, 10000)
+    
+    // Refresh when page becomes visible
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        run()
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    
+    return () => {
+      mounted = false
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [])
 
   const totalPrice = ticketPrices[formData.ticketType] * formData.quantity
