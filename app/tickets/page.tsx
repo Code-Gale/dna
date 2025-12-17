@@ -20,6 +20,8 @@ export default function TicketsPage() {
 
   const [ticketPrices, setTicketPrices] = useState<Record<string, number>>({ standard: 5000, vip: 7500, student: 5000 })
   const [isEarlyBird, setIsEarlyBird] = useState<boolean>(true)
+  const [earlyBirdPrice, setEarlyBirdPrice] = useState<number>(5000)
+  const [regularPrice, setRegularPrice] = useState<number>(7500)
 
   useEffect(() => {
     let mounted = true
@@ -37,8 +39,14 @@ export default function TicketsPage() {
         const early = data.isEarlyBird ?? (data.earlyBirdDeadline ? new Date() <= new Date(data.earlyBirdDeadline) : true)
         setIsEarlyBird(!!early)
         
-        // Use actual prices from settings
-        const price = data.currentPrice ?? (early ? (data.earlyBirdPrice ?? 5000) : (data.regularPrice ?? 7500))
+        // Store both early bird and regular prices
+        const ebPrice = data.earlyBirdPrice ?? 5000
+        const regPrice = data.regularPrice ?? 7500
+        setEarlyBirdPrice(ebPrice)
+        setRegularPrice(regPrice)
+        
+        // Use actual current price from settings
+        const price = data.currentPrice ?? (early ? ebPrice : regPrice)
         setTicketPrices({ 
           standard: price, 
           vip: price, 
@@ -123,6 +131,8 @@ export default function TicketsPage() {
               formData={formData}
               ticketPrices={ticketPrices}
               isEarlyBird={isEarlyBird}
+              earlyBirdPrice={earlyBirdPrice}
+              regularPrice={regularPrice}
               onFormChange={handleFormChange}
               onNextStep={handleNextStep}
               onPreviousStep={handlePreviousStep}

@@ -16,12 +16,30 @@ export default function Hero() {
   const [stats, setStats] = useState<{ total: number; sold: number; remaining: number } | null>(null)
   const [eventDate, setEventDate] = useState<string | null>(null)
 
-  // Separate effect for fetching event date
   useEffect(() => {
+    const calculateTimeLeft = (eventDateStr?: string | null) => {
+      const dateToUse = eventDateStr || eventDate
+      const eventDateTimestamp = dateToUse ? new Date(dateToUse).getTime() : new Date("2025-12-19T18:00:00+01:00").getTime()
+      const now = new Date().getTime()
+      const difference = eventDateTimestamp - now
+
+      if (difference > 0) {
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60),
+        })
+      } else {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 })
+      }
+    }
+
+    let countdownTimer: any
     let refreshTimer: any
     let mounted = true
     
-    const fetchEventDate = async () => {
+    const init = async () => {
       try {
         const res = await fetch(`/api/tickets/stats?t=${Date.now()}`, { 
           cache: "no-store",
@@ -34,65 +52,51 @@ export default function Hero() {
         setStats({ total: data.total, sold: data.sold, remaining: data.remaining })
         if (data.eventDate) {
           setEventDate(data.eventDate)
+          calculateTimeLeft(data.eventDate)
         }
       } catch {}
     }
     
-    // Initial fetch
-    fetchEventDate()
+    init()
     
-    // Refresh event date every 30 seconds to catch admin changes
+    // Update countdown every second
+    countdownTimer = setInterval(() => {
+      if (mounted) {
+        calculateTimeLeft()
+      }
+    }, 1000)
+    
+    // Re-fetch event date from server every 30 seconds to catch admin changes
     refreshTimer = setInterval(() => {
       if (mounted) {
-        fetchEventDate()
+        fetch(`/api/tickets/stats?t=${Date.now()}`, { 
+          cache: "no-store",
+          headers: { 'Cache-Control': 'no-cache' }
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (mounted && data.eventDate) {
+              setEventDate(data.eventDate)
+              calculateTimeLeft(data.eventDate)
+            }
+          })
+          .catch(() => {})
       }
     }, 30000)
     
     // Refresh when page becomes visible
     const handleVisibilityChange = () => {
       if (!document.hidden && mounted) {
-        fetchEventDate()
+        init()
       }
     }
     document.addEventListener('visibilitychange', handleVisibilityChange)
     
     return () => {
       mounted = false
+      clearInterval(countdownTimer)
       clearInterval(refreshTimer)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }
-  }, [])
-
-  // Separate effect for countdown timer that updates every second
-  useEffect(() => {
-    if (!eventDate) return
-
-    const calculateTimeLeft = () => {
-      const eventDateTimestamp = new Date(eventDate).getTime()
-      const now = new Date().getTime()
-      const difference = eventDateTimestamp - now
-
-      if (difference > 0) {
-        setTimeLeft({
-          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-          minutes: Math.floor((difference / 1000 / 60) % 60),
-          seconds: Math.floor((difference / 1000) % 60),
-        })
-      } else {
-        // Event has passed
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 })
-      }
-    }
-
-    // Calculate immediately
-    calculateTimeLeft()
-    
-    // Update countdown every second
-    const countdownTimer = setInterval(calculateTimeLeft, 1000)
-    
-    return () => {
-      clearInterval(countdownTimer)
     }
   }, [eventDate])
 

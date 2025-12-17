@@ -18,12 +18,14 @@ interface TicketFormProps {
   }
   ticketPrices: Record<string, number>
   isEarlyBird: boolean
+  earlyBirdPrice: number
+  regularPrice: number
   onFormChange: (field: string, value: string | number) => void
   onNextStep: () => void
   onPreviousStep: () => void
 }
 
-export default function TicketForm({ step, formData, ticketPrices, isEarlyBird, onFormChange, onNextStep, onPreviousStep }: TicketFormProps) {
+export default function TicketForm({ step, formData, ticketPrices, isEarlyBird, earlyBirdPrice, regularPrice, onFormChange, onNextStep, onPreviousStep }: TicketFormProps) {
   const [paying, setPaying] = useState(false)
   const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeoutMs = 20000) => {
     const controller = new AbortController()
@@ -35,16 +37,17 @@ export default function TicketForm({ step, formData, ticketPrices, isEarlyBird, 
       clearTimeout(id)
     }
   }
-  
-  // Get current price for standard ticket
-  const currentPrice = ticketPrices.standard || 5000
-  const priceDisplay = `₦${currentPrice.toLocaleString()}${isEarlyBird ? " (Early Bird)" : ""}`
+  // Get dynamic prices - use the actual prices passed as props
+  const currentPrice = ticketPrices[formData.ticketType] || ticketPrices.standard
   
   const ticketOptions = [
     {
       id: "standard",
       name: "General Admission",
-      price: priceDisplay,
+      price: isEarlyBird 
+        ? `₦${earlyBirdPrice.toLocaleString()} (Early Bird)` 
+        : `₦${regularPrice.toLocaleString()} (Regular)`,
+      currentPrice: currentPrice,
       description: "Admission with dinner and entertainment",
       features: ["3-course dinner", "Entertainment", "Awards ceremony access"],
     },
@@ -73,7 +76,10 @@ export default function TicketForm({ step, formData, ticketPrices, isEarlyBird, 
                     <h3 className="font-semibold text-foreground">{option.name}</h3>
                     <p className="text-sm text-foreground/70">{option.description}</p>
                   </div>
-                  <span className="font-serif text-xl font-bold text-primary">{option.price}</span>
+                  <span className="font-serif text-xl font-bold text-primary">
+                    ₦{option.currentPrice.toLocaleString()}
+                    {isEarlyBird ? " (Early Bird)" : " (Regular)"}
+                  </span>
                 </div>
                 <ul className="text-sm text-foreground/70 space-y-1">
                   {option.features.map((feature, idx) => (
