@@ -9,9 +9,16 @@ export default function FAQ() {
   const [faqs, setFaqs] = useState<Array<{ question: string; answer: string }>>([])
 
   useEffect(() => {
+    let mounted = true
     const run = async () => {
       try {
-        const res = await fetch('/api/settings/get', { cache: 'no-store' })
+        const res = await fetch(`/api/settings/get?t=${Date.now()}`, { 
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+          }
+        })
+        if (!mounted) return
         const data = await res.json()
         if (Array.isArray(data.faqs) && data.faqs.length > 0) {
           setFaqs(data.faqs)
@@ -22,13 +29,32 @@ export default function FAQ() {
           ])
         }
       } catch {
-        setFaqs([
-          { question: 'What is the dress code?', answer: 'Formal attire. Think elegant, think Royalty.' },
-          { question: 'What time should I arrive?', answer: 'Doors open by 2PM. Check-in starts at 2:30 PM.' },
-        ])
+        if (mounted) {
+          setFaqs([
+            { question: 'What is the dress code?', answer: 'Formal attire. Think elegant, think Royalty.' },
+            { question: 'What time should I arrive?', answer: 'Doors open by 2PM. Check-in starts at 2:30 PM.' },
+          ])
+        }
       }
     }
     run()
+    
+    // Refresh FAQs every 60 seconds to catch admin changes
+    const interval = setInterval(run, 60000)
+    
+    // Refresh when page becomes visible
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        run()
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    
+    return () => {
+      mounted = false
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [])
 
   return (

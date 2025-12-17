@@ -1,30 +1,30 @@
 import { NextResponse } from "next/server"
 import { dbConnect } from "@/lib/db"
 import { SettingModel } from "@/models/Setting"
-
 export const runtime = "nodejs"
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
 
 export async function GET() {
   await dbConnect()
   let setting = await SettingModel.findOne()
   if (!setting) setting = await SettingModel.create({})
-  return NextResponse.json({
-    totalTickets: setting.totalTickets,
-    earlyBirdPrice: setting.earlyBirdPrice,
-    regularPrice: setting.regularPrice,
-    earlyBirdDeadline: setting.earlyBirdDeadline,
-    eventDate: setting.eventDate,
-    contactEmail: setting.contactEmail,
-    contactPhone: setting.contactPhone,
-    outfitInspiration: setting.outfitInspiration || [],
-    faqs: setting.faqs || [],
-  }, {
-    headers: {
-      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-      'Pragma': 'no-cache',
-      'Expires': '0'
+  return NextResponse.json(
+    {
+      totalTickets: setting.totalTickets,
+      earlyBirdPrice: setting.earlyBirdPrice,
+      regularPrice: setting.regularPrice,
+      earlyBirdDeadline: setting.earlyBirdDeadline,
+      eventDate: setting.eventDate,
+      contactEmail: setting.contactEmail,
+      contactPhone: setting.contactPhone,
+      outfitInspiration: setting.outfitInspiration || [],
+      faqs: setting.faqs || [],
+    },
+    {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      },
     }
-  })
+  )
 }

@@ -18,10 +18,19 @@ export default function Gallery() {
 
   useEffect(() => {
     let mounted = true
-    ;(async () => {
+    const run = async () => {
       try {
-        const res = await fetch("/api/settings/get", { cache: "no-store" })
-        if (!res.ok) return setCards([])
+        const res = await fetch(`/api/settings/get?t=${Date.now()}`, { 
+          cache: "no-store",
+          headers: {
+            'Cache-Control': 'no-cache',
+          }
+        })
+        if (!mounted) return
+        if (!res.ok) {
+          setCards([])
+          return
+        }
         const data = await res.json()
         const items: OutfitCard[] = Array.isArray(data.outfitInspiration)
           ? data.outfitInspiration.filter((x: any) => typeof x.title === "string" && x.title.trim().length > 0)
@@ -29,11 +38,28 @@ export default function Gallery() {
         if (!mounted) return
         setCards(items)
       } catch {
-        setCards([])
+        if (mounted) {
+          setCards([])
+        }
       }
-    })()
+    }
+    run()
+    
+    // Refresh gallery every 60 seconds to catch admin changes
+    const interval = setInterval(run, 60000)
+    
+    // Refresh when page becomes visible
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        run()
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    
     return () => {
       mounted = false
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
   }, [])
 

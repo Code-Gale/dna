@@ -14,14 +14,12 @@ export default function Hero() {
     seconds: 0,
   })
   const [stats, setStats] = useState<{ total: number; sold: number; remaining: number } | null>(null)
-  const [eventDate, setEventDate] = useState<string | null>(null)
 
   useEffect(() => {
     const calculateTimeLeft = (eventDateStr?: string) => {
-      const dateToUse = eventDateStr || eventDate
-      const eventDateTimestamp = dateToUse ? new Date(dateToUse).getTime() : new Date("2025-12-19T18:00:00+01:00").getTime()
+      const eventDate = eventDateStr ? new Date(eventDateStr).getTime() : new Date("2025-12-19T18:00:00+01:00").getTime()
       const now = new Date().getTime()
-      const difference = eventDateTimestamp - now
+      const difference = eventDate - now
 
       if (difference > 0) {
         setTimeLeft({
@@ -37,32 +35,39 @@ export default function Hero() {
     let mounted = true
     const init = async () => {
       try {
-        // Add cache-busting timestamp to ensure fresh data
-        const timestamp = Date.now()
-        const res = await fetch(`/api/tickets/stats?t=${timestamp}&_=${Math.random()}`, { 
+        const res = await fetch(`/api/tickets/stats?t=${Date.now()}`, { 
           cache: "no-store",
-          method: 'GET',
           headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0',
+            'Cache-Control': 'no-cache',
           }
         })
         if (!mounted) return
         const data = await res.json()
         setStats({ total: data.total, sold: data.sold, remaining: data.remaining })
         if (data.eventDate) {
-          setEventDate(data.eventDate)
           calculateTimeLeft(data.eventDate)
         }
       } catch {}
       if (mounted) {
-        timer = setInterval(() => calculateTimeLeft(), 1000)
+        timer = setInterval(() => {
+          if (mounted) {
+            // Re-fetch event date periodically to catch admin changes
+            fetch(`/api/tickets/stats?t=${Date.now()}`, { 
+              cache: "no-store",
+              headers: { 'Cache-Control': 'no-cache' }
+            })
+              .then(res => res.json())
+              .then(data => {
+                if (mounted && data.eventDate) {
+                  calculateTimeLeft(data.eventDate)
+                }
+              })
+              .catch(() => {})
+          }
+        }, 30000) // Check every 30 seconds
       }
     }
     init()
-    // Refresh stats every 15 seconds to catch admin changes
-    const statsInterval = setInterval(init, 15000)
     
     // Refresh when page becomes visible
     const handleVisibilityChange = () => {
@@ -75,10 +80,9 @@ export default function Hero() {
     return () => {
       mounted = false
       clearInterval(timer)
-      clearInterval(statsInterval)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [eventDate])
+  }, [])
 
   return (
     <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white via-white to-accent/5">

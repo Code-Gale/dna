@@ -1,51 +1,12 @@
-"use client"
-
 import { Calendar, MapPin, Clock, Users } from "lucide-react"
 import { Card } from "@/components/ui/card"
-import { useEffect, useState } from "react"
 
 export default function EventDetails() {
-  const [eventDate, setEventDate] = useState<string | null>(null)
-
-  useEffect(() => {
-    const fetchEventDate = async () => {
-      try {
-        // Add cache-busting timestamp to ensure fresh data
-        const timestamp = Date.now()
-        const res = await fetch(`/api/tickets/stats?t=${timestamp}`, { 
-          cache: "no-store",
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-          }
-        })
-        const data = await res.json()
-        if (data.eventDate) {
-          setEventDate(data.eventDate)
-        }
-      } catch {}
-    }
-    fetchEventDate()
-    // Refresh every 10 seconds to catch admin changes
-    const interval = setInterval(fetchEventDate, 10000)
-    return () => clearInterval(interval)
-  }, [])
-
-  const formatEventDate = (dateStr: string | null) => {
-    if (!dateStr) return "Wednesday, December 19, 2025"
-    try {
-      const date = new Date(dateStr)
-      return date.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
-    } catch {
-      return "Wednesday, December 19, 2025"
-    }
-  }
-
   const details = [
     {
       icon: Calendar,
       label: "Date",
-      value: formatEventDate(eventDate),
+      value: "Wednesday, December 19, 2025",
     },
     {
       icon: Clock,

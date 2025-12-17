@@ -8,15 +8,39 @@ export default function Contact() {
   const [phone, setPhone] = useState("+2348149603848")
 
   useEffect(() => {
+    let mounted = true
     const run = async () => {
       try {
-        const res = await fetch('/api/settings/get', { cache: 'no-store' })
+        const res = await fetch(`/api/settings/get?t=${Date.now()}`, { 
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+          }
+        })
+        if (!mounted) return
         const data = await res.json()
         if (data.contactEmail) setEmail(String(data.contactEmail))
         if (data.contactPhone) setPhone(String(data.contactPhone))
       } catch {}
     }
     run()
+    
+    // Refresh contact info every 60 seconds to catch admin changes
+    const interval = setInterval(run, 60000)
+    
+    // Refresh when page becomes visible
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        run()
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    
+    return () => {
+      mounted = false
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [])
   return (
     <section id="contact" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">

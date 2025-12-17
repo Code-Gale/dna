@@ -25,29 +25,31 @@ export default function TicketsPage() {
     let mounted = true
     const run = async () => {
       try {
-        // Add cache-busting timestamp to ensure fresh data
-        const timestamp = Date.now()
-        const res = await fetch(`/api/tickets/stats?t=${timestamp}&_=${Math.random()}`, { 
+        const res = await fetch(`/api/tickets/stats?t=${Date.now()}`, { 
           cache: "no-store",
-          method: 'GET',
           headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0',
+            'Cache-Control': 'no-cache',
           }
         })
-        if (!mounted) return
         const data = await res.json()
-        const early = new Date() <= new Date(data.earlyBirdDeadline)
+        if (!mounted) return
+        
+        const early = data.isEarlyBird ?? (data.earlyBirdDeadline ? new Date() <= new Date(data.earlyBirdDeadline) : true)
         setIsEarlyBird(!!early)
-        // Use prices from settings
-        const price = early ? (data.earlyBirdPrice ?? 5000) : (data.regularPrice ?? 7500)
-        setTicketPrices({ standard: price, vip: price, student: price })
+        
+        // Use actual prices from settings
+        const price = data.currentPrice ?? (early ? (data.earlyBirdPrice ?? 5000) : (data.regularPrice ?? 7500))
+        setTicketPrices({ 
+          standard: price, 
+          vip: price, 
+          student: price 
+        })
       } catch {}
     }
     run()
-    // Poll for updates every 10 seconds to catch admin changes
-    const interval = setInterval(run, 10000)
+    
+    // Refresh prices every 30 seconds to catch admin changes
+    const interval = setInterval(run, 30000)
     
     // Refresh when page becomes visible
     const handleVisibilityChange = () => {
@@ -119,8 +121,6 @@ export default function TicketsPage() {
             <TicketForm
               step={step}
               formData={formData}
-              ticketPrices={ticketPrices}
-              isEarlyBird={isEarlyBird}
               onFormChange={handleFormChange}
               onNextStep={handleNextStep}
               onPreviousStep={handlePreviousStep}
