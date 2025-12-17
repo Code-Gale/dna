@@ -28,9 +28,21 @@ self.addEventListener('fetch', (event) => {
   const isPrivate = url.pathname.startsWith('/admin') || url.pathname.startsWith('/api')
   const isHTMLNavigation = request.mode === 'navigate' || (request.headers.get('accept') || '').includes('text/html')
 
-  // Bypass cache for private routes and API, always go to network
+  // Bypass cache for private routes and API, always go to network with cache-busting
   if (isPrivate) {
-    event.respondWith(fetch(request))
+    // Add cache-busting query param and headers
+    const urlWithCacheBust = new URL(request.url)
+    urlWithCacheBust.searchParams.set('_sw', Date.now().toString())
+    const newRequest = new Request(urlWithCacheBust.toString(), {
+      ...request,
+      cache: 'no-store',
+      headers: {
+        ...Object.fromEntries(request.headers.entries()),
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+      }
+    })
+    event.respondWith(fetch(newRequest))
     return
   }
 

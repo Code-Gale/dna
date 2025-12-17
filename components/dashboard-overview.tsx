@@ -14,8 +14,14 @@ export default function DashboardOverview() {
     const run = async () => {
       try {
         const [statsRes, listRes] = await Promise.all([
-          fetch("/api/tickets/stats"),
-          fetch("/api/tickets/list"),
+          fetch(`/api/tickets/stats?t=${Date.now()}`, { 
+            cache: "no-store",
+            headers: { 'Cache-Control': 'no-cache' }
+          }),
+          fetch(`/api/tickets/list?t=${Date.now()}`, { 
+            cache: "no-store",
+            headers: { 'Cache-Control': 'no-cache' }
+          }),
         ])
         const stats = await statsRes.json()
         const list = await listRes.json()
