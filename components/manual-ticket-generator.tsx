@@ -13,6 +13,7 @@ interface TicketData {
   serialNumber: string
   fullName: string
   email: string
+  phone: string
 }
 
 export default function ManualTicketGenerator() {
@@ -20,6 +21,7 @@ export default function ManualTicketGenerator() {
     serialNumber: "",
     fullName: "",
     email: "",
+    phone: "",
   })
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null)
   const [backgroundImageFile, setBackgroundImageFile] = useState<File | null>(null)
@@ -161,6 +163,7 @@ export default function ManualTicketGenerator() {
           serialNumber: ticketData.serialNumber,
           fullName: ticketData.fullName,
           email: ticketData.email,
+          phone: ticketData.phone || "N/A",
           recipientEmail,
           emailMessage,
           backgroundImage,
@@ -176,7 +179,7 @@ export default function ManualTicketGenerator() {
       toast.success("Ticket generated and sent successfully!")
       
       // Reset form
-      setTicketData({ serialNumber: "", fullName: "", email: "" })
+      setTicketData({ serialNumber: "", fullName: "", email: "", phone: "" })
       setBackgroundImage(null)
       setBackgroundImageFile(null)
       setPreviewUrl(null)
@@ -244,6 +247,19 @@ export default function ManualTicketGenerator() {
                   value={ticketData.email}
                   onChange={(e) =>
                     setTicketData({ ...ticketData, email: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="e.g., +1234567890 (optional)"
+                  value={ticketData.phone}
+                  onChange={(e) =>
+                    setTicketData({ ...ticketData, phone: e.target.value })
                   }
                 />
               </div>

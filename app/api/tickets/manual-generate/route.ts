@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     await dbConnect()
 
     const body = await request.json()
-    const { serialNumber, fullName, email, recipientEmail, emailMessage, backgroundImage } = body
+    const { serialNumber, fullName, email, phone, recipientEmail, emailMessage, backgroundImage } = body
 
     if (!serialNumber || !fullName || !email || !recipientEmail || !backgroundImage) {
       return NextResponse.json(
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       firstName,
       lastName,
       email,
-      phone: "", // Not required for manual tickets
+      phone: phone || "N/A", // Use provided phone or default to "N/A"
       amountPaid: 0, // Manual tickets may not have payment
       paymentStatus: "success",
       ticketType: "regular", // Default type

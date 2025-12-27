@@ -13,23 +13,54 @@ const ADMIN_API_PATHS = [
 ]
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
-
-  const needsAuth = pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')
-    || ADMIN_API_PATHS.some((p)=> pathname.startsWith(p))
-
-  if (!needsAuth) return NextResponse.next()
-
-  const token = request.cookies.get('admin_token')?.value
-  if (!token) return NextResponse.redirect(new URL('/admin/login', request.url))
   try {
-    await verifyAdminJWT(token)
-    return NextResponse.next()
-  } catch {
-    return NextResponse.redirect(new URL('/admin/login', request.url))
+    const { pathname } = request.nextUrl
+
+    // Allow login page and public API routes
+    if (pathname.startsWith('/admin/login')) {
+      return NextResponse.next()
+    }
+
+    // Check if route needs authentication
+    const needsAuth = pathname.startsWith('/admin') 
+      || ADMIN_API_PATHS.some((p) => pathname.startsWith(p))
+
+    if (!needsAuth) {
+      return NextResponse.next()
+    }
+
+    // Check for admin token
+    const token = request.cookies.get('admin_token')?.value
+    if (!token) {
+      const loginUrl = new URL('/admin/login', request.url)
+      return NextResponse.redirect(loginUrl)
+    }
+
+    // Verify token
+    try {
+      await verifyAdminJWT(token)
+      return NextResponse.next()
+    } catch (error) {
+      // Token invalid or expired
+      const loginUrl = new URL('/admin/login', request.url)
+      return NextResponse.redirect(loginUrl)
+    }
+  } catch (error) {
+    // Log error in production for debugging
+    console.error('Middleware error:', error)
+    // Don't block the request, but redirect to login as fallback
+    const loginUrl = new URL('/admin/login', request.url)
+    return NextResponse.redirect(loginUrl)
   }
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/api/tickets/:path*', '/api/settings/:path*', '/api/awards/:path*']
+  matcher: [
+    '/admin/:path*',
+    '/api/tickets/:path*',
+    '/api/settings/:path*',
+    '/api/awards/:path*',
+    '/api/push/:path*',
+    '/api/reminders/:path*'
+  ]
 }
