@@ -1,6 +1,6 @@
 "use client"
 
-import { BarChart3, QrCode, Ticket, TrendingUp, LogOut, Settings, HardDrive, Bell, Award, Menu, X } from "lucide-react"
+import { BarChart3, QrCode, Ticket, TrendingUp, LogOut, Settings, HardDrive, Bell, Award, Menu, X, TicketPlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 
@@ -15,6 +15,7 @@ export default function AdminNavigation({ activeTab, setActiveTab }: AdminNaviga
     { id: "overview", label: "Overview", icon: BarChart3 },
     { id: "scanner", label: "Ticket Scanner", icon: QrCode },
     { id: "tickets", label: "All Tickets", icon: Ticket },
+    { id: "manual-tickets", label: "Manual Tickets", icon: TicketPlus },
     { id: "analytics", label: "Analytics", icon: TrendingUp },
     { id: "awards", label: "Awards", icon: Award },
     { id: "storage", label: "Storage", icon: HardDrive },

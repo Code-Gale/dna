@@ -5,11 +5,13 @@ import AdminNavigation from "@/components/admin-navigation"
 import DashboardOverview from "@/components/dashboard-overview"
 import TicketScanner from "@/components/ticket-scanner"
 import TicketsList from "@/components/tickets-list"
+import ManualTicketGenerator from "@/components/manual-ticket-generator"
 import Analytics from "@/components/analytics"
 import SettingsEditor from "@/components/settings-editor"
 import AdminStorage from "@/components/admin-storage"
 import AdminNotifications from "@/components/admin-notifications"
 import AdminAwards from "@/components/admin-awards"
+import { Toaster } from "@/components/ui/sonner"
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview")
@@ -30,6 +32,7 @@ export default function AdminDashboard() {
           {activeTab === "overview" && <DashboardOverview />}
           {activeTab === "scanner" && <TicketScanner />}
           {activeTab === "tickets" && <TicketsList />}
+          {activeTab === "manual-tickets" && <ManualTicketGenerator />}
           {activeTab === "analytics" && <Analytics />}
           {activeTab === "awards" && <AdminAwards />}
           {activeTab === "storage" && <AdminStorage />}
@@ -37,6 +40,7 @@ export default function AdminDashboard() {
           {activeTab === "settings" && <SettingsEditor />}
         </div>
       </main>
+      <Toaster />
     </div>
   )
 }
